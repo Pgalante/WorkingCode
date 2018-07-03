@@ -1,4 +1,5 @@
 library(tidyverse)
+library(raster)
 ##############Global Wc to crop 
 datedRasterStack<-stack(list.files(path = '/home/pjg/worldClim/wc2-5', pattern = '\\.tif$', full.names = T))
 ## Give fake dates  -- for now using 2 years because thats what I have occ data for
@@ -21,23 +22,24 @@ datedRasterStack<-crop(datedRasterStack, e)
 #####  LUBRIDATE WAY  ######
 #######  STILL NEED TO FIGURE OUT HOW TO DEFINE UNIQUE MONTH/YEAR/DAY COMBINATIONS 
 library(lubridate)
-dateScale<-"month"
+dateScale<-"year"
 occDates<-function(dtab1, dateScale){
   require(lubridate)
   d<-lapply(dtab1$date, mdy_hm)
   d.df <- tbl_df(cbind(lapply(d, year), lapply(d, month), lapply(d, day)))
   colnames(d.df) <- c("year", "month", "day")
   if (dateScale == "year"){
-    return(unique(select(d.df, year)))
+    return(unique(dplyr::select(d.df, year)))
   } 
   if (dateScale == "month"){
-    return(unique(select(d.df, year, month)))
+    return(unique(dplyr::select(d.df, year, month)))
   } 
   if (dateScale == "day"){
-    return(unique(select(d.df, year, month, day)))
+    return(unique(dplyr::select(d.df, year, month, day)))
   }
 }
-test<-occDates(dtab1, dateScale = "year")
+uniDates<-occDates(dtab1, dateScale = "year")
+class(uniDates)
 
 # #################### OLD WAY  ########################
 # dateFormat<-"%m/%d/%Y %H:%M"
@@ -63,13 +65,23 @@ test<-occDates(dtab1, dateScale = "year")
 # Make a list of rasterStacks for each unique year
 rasNames <- lapply(test[[1]], function(x) datedRasterStack[[grep(x, names(datedRasterStack))]])
 # Create different tibbles for each unique dateScale
-subOccs <- function(dateScale, dtab1, test){
+subOccs <- function(dateScale, dtab1, uniDates){
   if (dateScale == "year"){
-    dtab2 <- dtab1 %>% mutate(date = mdy_hm(date)) %>%
-      lapply(distinct(year(date)),  print(x))
-            
+    dtab2 <- dtab1 %>% mutate(date = mdy_hm(date)) %>% 
+      
+lapply(a, function(x) filter(dtab2, year(date) == a))
+    
+for (i in 1:2){
+  t1[[i]]<-filter(dtab2, year(dtab2$date)==uniques[[1]][i])
+}    
+
+lapply(uniDates[[1]], function (x) filter(year(dtab2$date) == x))
+
 
     
+dtab2 %>% distinct(year(date))
+
+distinct(year(mdy_hm(dtab1$date)))
     
      d<-add_column(dtab1, unlist(lapply(lapply(dtab1$date, mdy_hm), year))
     colnames(d)<-c("lon", "lat", "utc", "dates")
