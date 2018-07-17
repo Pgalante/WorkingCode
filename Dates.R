@@ -2,7 +2,7 @@ library(tidyverse)
 library(raster)
 library(lubridate)
 ##############Global Wc to crop 
-datedRasterStack<-stack(list.files(path = '/home/pgalante/Projects/layers/wc2_5', pattern = '\\.tif$', full.names = T))
+datedRasterStack<-stack(list.files(path = '/home/pgalante/Projects/rasterData/wc2-5', pattern = '\\.tif$', full.names = T))
 ## Give fake dates  -- for now using 2 years because thats what I have occ data for
 years<-c(rep("2008", 10), rep("2009", 10))
 for (i in 1:19){
@@ -95,43 +95,9 @@ subOccs <- function(dateScale, dtab1, uniDates){
 
 test<-subOccs(dateScale = "year", dtab1 = dtab1, uniDates = uniDates)
 
-dtab2 %>% lapply(uniDates, function(x) filter(dtab2, year(dtab2$date)==uniDates[[1]][x]))
-      class(unique(dtab2$years)[1])
-      
-lapply(uniDates, function(x) filter(dtab2, year(date) == uniDates))
-
-t1<-NULL    
-for (i in 1:2){
-  t1[[i]]<-filter(dtab2, year(dtab2$date)==uniDates[[1]][i])
-}    
-
-lapply(uniDates[[1]], function (x) filter(year(dtab2$date) == x))
-
-distinct(year(mdy_hm(dtab1$date)))
-    
-     d<-add_column(dtab1, unlist(lapply(lapply(dtab1$date, mdy_hm), year))
-    colnames(d)<-c("lon", "lat", "utc", "dates")
-    return(
-d[d$dates      
-  }
-}
-
-
-subOccs <- function(dateScale, occDates, test){
-  if (dateScale == "year"){
-    return(lapply(test, function (x) occDates[strptime(occDates$date, dateFormat)$year+1900 == test,]))
-  }
-}
-test2 <- subOccs(dateScale, occDates, test)
-
-
-
 # Match occs to dates and extract values
-datedValues<-function(test2, rasNames){
 
-mapply(raster::extract, rasNames, as.matrix(test2)[,1:2])
 
-raster::extract(rasNames[[1]], as.data.frame(cbind(as.matrix(test2[[1]]$lon), matrix(test2[[1]]$lat))))
 
-plot(rasNames[[1]][[1]])
-points(as.data.frame(cbind(as.matrix(test2[[1]]$lon), matrix(test2[[1]]$lat))))
+
+
