@@ -2,7 +2,7 @@ library(tidyverse)
 library(raster)
 library(lubridate)
 ##############Global Wc to crop 
-datedRasterStack<-stack(list.files(path = '/home/pgalante/Projects/rasterData/wc2-5', pattern = '\\.tif$', full.names = T))
+env<-stack(list.files(path = '/home/pgalante/Projects/rasterData/wc2-5', pattern = '\\.tif$', full.names = T))
 ## Give fake dates  -- for now using 2 years because thats what I have occ data for
 years<-c(rep("2008", 10), rep("2009", 10))
 for (i in 1:19){
