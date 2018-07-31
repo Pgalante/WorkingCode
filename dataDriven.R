@@ -10,7 +10,7 @@ dateScale<-"year"
 #########################################################################################################
 ##  Name rasters using associated dates (in this example simulated dates)
 dates <- list(sample(seq(as.Date('2005-01-01'), as.Date('2016-01-01'), by="day"), 19))
-dates <- uniqueDates$years
+dates <- arrange(uniqueDates, years)$years
 test <- lapply(dates, function(x) paste("Y", x, sep=''))
 e1<-e1[[1:8]]
 names(e1) <- lapply(dates, function(x) paste("Y", x, sep=''))
@@ -55,34 +55,34 @@ uniDates<-function(occ1, dateScale){
   require(lubridate)
   
   if (dateScale == "year"){
-    return(unique(dplyr::select(occ1, years)))
+    return(arrange(unique(dplyr::select(occ1, years)), years))
   } 
   if (dateScale == "month"){
-    return(unique(dplyr::select(occ1, years, months)))
+    return(arrange(unique(dplyr::select(occ1, years, months)), years))
   } 
   if (dateScale == "day"){
-    return(unique(dplyr::select(occ1, years, months, days)))
+    return(arrange(unique(dplyr::select(occ1, years, months, days)), years))
   }
 }
-uniqueDates<- uniDates(occ1, dateScale)
+uniqueDates <- uniDates(occ1, dateScale)
 ##  Last, for each unique date, create different tibbles
 parseDate <- function(dateScale, occ1, uniqueDates){
-  t1<-NULL
+  t1 <- NULL
   if (dateScale == "year"){
-    for (i in 1:length(unique(occ1$years))){
-      t1[[i]] = filter(occ1, years == as.list(unique(occ1$years))[[i]])
+    for (i in 1:nrow(uniqueDates)){
+      t1[[i]] = filter(occ1, years == as.list(uniqueDates)$years[[i]])
     }}
   #### NEED TO FIGURE OUT YEAR MONTH DAY COMBINATIONS
   if (dateScale == "month"){
-    t1<-NULL
-    for (i in 1:length(unique(occ1$years))){
-      t1[[i]] = filter(occ1, months == as.list(unique(occ1$months))[[i]])
+    t1 <- NULL
+    for (i in 1:nrow(uniqueDates)){
+      t1[[i]] = filter(occ1, months == as.list(uniqueDates)$years[[i]])
     }}
   
   if (dateScale == "day"){
-    t1<-NULL
-    for (i in 1:length(unique(occ1$days))){
-      t1[[i]] = filter(occ1, days == as.list(unique(occ1$days))[[i]])
+    t1 <- NULL
+    for (i in 1:nrow(uniqueDates)){
+      t1[[i]] = filter(occ1, days == as.list(uniqueDates)$years[[i]])
     }}
   return(t1)
 }
@@ -96,23 +96,27 @@ ydates<-lapply(uniqueDates, function(x) paste("Y", x, sep=''))
 e1
 ###############################################################################
 ### For each occs sub-table, extract values from corresponding env/RS sub-stack
-########  NEED TO FIGURE OUT BETTER "MATCHING" WAY FOR THIS INSTEAD OF LOOPING THROUGH BOTH LISTS. THIS FIXES THE ISSUE OF 
-#########  THE OCCTIBBLES OF OCC3 BEING OUT OF ORDER.
-vals<-NULL
-for (i in 1:length(occ3)){
-  vals[[i]] <- extract(e1[[i]], cbind(occ3[[i]]$long, occ3[[i]]$lat))
+valExtract <- function(occ3, e1){
+  occ4 <- lapply(occ3, function(x) x %>% dplyr::select(long, lat))
+  vals <- mapply(raster::extract, unstack(e1), occ4)
+  lowerBound <- min(unlist(vals))
+  upperBound <- max(unlist(vals))
+  return(as.data.frame(cbind(lowerBound, upperBound)))
 }
-
+Bounds <-valExtract(occ3, e1)
 
 ###############################################################################
-### Reappend extracted values and get min/max  ################################
+############### Use bounds to set mask limits  ################################
+## Load current env layer to use as mask since this is most recent data 
+currentEnv<-e1[[8]]
+currentEnv[currentEnv > Bounds$lowerBound] <- NA
+currentEnv[currentEnv < Bounds$upperBound] <- NA
 
+dataMask <- function(rasterMask, Bounds){
+  rasterMask[rasterMask > Bounds$lowerBound] <- NA
+  rasterMask[rasterMask < Bounds$upperBound] <- NA
+  return(rasterMask)
+}
+dataMask(currentEnv, Bounds)
 
-
-
-
-
-
-
- 
 
